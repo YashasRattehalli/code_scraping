@@ -1,6 +1,6 @@
-# Postman Guide for GitHub Repository Discovery Service
+# Postman Guide for GitHub Repository Discovery & Scraping Service
 
-This guide provides comprehensive examples for testing the GitHub Repository Discovery Service using Postman.
+This guide provides comprehensive examples for testing the GitHub Repository Discovery & Scraping Service using Postman.
 
 ## Quick Setup
 
@@ -37,7 +37,7 @@ GET http://localhost:8000/health
 ```json
 {
   "status": "healthy",
-  "service": "GitHub Repository Discovery Service"
+  "service": "GitHub Repository Discovery & Scraping Service"
 }
 ```
 
@@ -54,7 +54,7 @@ GET http://localhost:8000/
 
 ```json
 {
-  "message": "GitHub Repository Discovery Service"
+  "message": "GitHub Repository Discovery & Scraping Service"
 }
 ```
 
@@ -63,7 +63,7 @@ GET http://localhost:8000/
 **Endpoint:** `GET /discover`
 **Purpose:** Search for GitHub repositories based on criteria
 
-## Query Parameters
+## Discovery Query Parameters
 
 | Parameter   | Type          | Default | Description                            | Example                    |
 | ----------- | ------------- | ------- | -------------------------------------- | -------------------------- |
@@ -73,9 +73,46 @@ GET http://localhost:8000/
 | `top_k`     | integer       | 10      | Maximum number of repositories (1-100) | `25`                       |
 | `sort`      | string        | "stars" | Sort by: stars, forks, or updated      | `"forks"`                  |
 
+### 4. Scrape Repository
+
+**Endpoint:** `POST /scrape`
+**Purpose:** Scrape code snippets from a GitHub repository
+
+## Scraping Request Body
+
+```json
+{
+  "repo_url": "https://github.com/owner/repo",
+  "mode": "files",
+  "start_year": 2024,
+  "end_year": 2024,
+  "top_k": 10
+}
+```
+
+## Scraping Parameters
+
+| Parameter    | Type    | Required | Default | Description                            | Example                                   |
+| ------------ | ------- | -------- | ------- | -------------------------------------- | ----------------------------------------- |
+| `repo_url`   | string  | Yes      | -       | GitHub repository URL                  | `"https://github.com/fastapi/fastapi"`    |
+| `mode`       | string  | Yes      | -       | Scraping mode                          | `"files"`, `"commits"`, `"pull_requests"` |
+| `start_year` | integer | No       | null    | Start year for time window (2008-2025) | `2024`                                    |
+| `end_year`   | integer | No       | null    | End year for time window (2008-2025)   | `2024`                                    |
+| `top_k`      | integer | No       | 10      | Maximum code samples to return (1-100) | `5`                                       |
+
+## Scraping Modes
+
+| Mode            | Description                      | Use Case                                  |
+| --------------- | -------------------------------- | ----------------------------------------- |
+| `files`         | Scrape source code files         | Get current codebase structure            |
+| `commits`       | Scrape code changes from commits | Analyze code evolution and changes        |
+| `pull_requests` | Scrape code changes from PRs     | Review code contributions and discussions |
+
 ## Example Requests
 
-### Example 1: Popular Python Repositories
+### Discovery Examples
+
+#### Example 1: Popular Python Repositories
 
 ```
 GET http://localhost:8000/discover?min_stars=1000&languages=Python&top_k=5&sort=stars
@@ -83,7 +120,7 @@ GET http://localhost:8000/discover?min_stars=1000&languages=Python&top_k=5&sort=
 
 **Use Case:** Find the top 5 most starred Python repositories with at least 1000 stars.
 
-### Example 2: JavaScript/TypeScript Repositories
+#### Example 2: JavaScript/TypeScript Repositories
 
 ```
 GET http://localhost:8000/discover?min_stars=500&languages=JavaScript&languages=TypeScript&top_k=15&sort=forks
@@ -91,7 +128,7 @@ GET http://localhost:8000/discover?min_stars=500&languages=JavaScript&languages=
 
 **Use Case:** Find JavaScript or TypeScript repositories with at least 500 stars, sorted by fork count.
 
-### Example 3: Recently Updated Go Repositories
+#### Example 3: Recently Updated Go Repositories
 
 ```
 GET http://localhost:8000/discover?min_stars=100&languages=Go&top_k=20&sort=updated
@@ -99,33 +136,64 @@ GET http://localhost:8000/discover?min_stars=100&languages=Go&top_k=20&sort=upda
 
 **Use Case:** Find recently updated Go repositories with at least 100 stars.
 
-### Example 4: High Fork Count Repositories
+### Scraping Examples
 
-```
-GET http://localhost:8000/discover?min_forks=1000&top_k=25&sort=forks
-```
+#### Example 1: Scrape Source Files
 
-**Use Case:** Find repositories with at least 1000 forks, regardless of language.
-
-### Example 5: Multiple Programming Languages
-
-```
-GET http://localhost:8000/discover?min_stars=200&languages=Python&languages=Java&languages=C%2B%2B&top_k=30&sort=stars
+```json
+{
+  "repo_url": "https://github.com/fastapi/fastapi",
+  "mode": "files",
+  "top_k": 3
+}
 ```
 
-**Use Case:** Find repositories in Python, Java, or C++ with at least 200 stars.
+**Use Case:** Get source code files from the FastAPI repository.
 
-### Example 6: Default Parameters
+#### Example 2: Scrape Recent Commits
 
+```json
+{
+  "repo_url": "https://github.com/fastapi/fastapi",
+  "mode": "commits",
+  "start_year": 2024,
+  "end_year": 2024,
+  "top_k": 5
+}
 ```
-GET http://localhost:8000/discover
+
+**Use Case:** Get code changes from 2024 commits.
+
+#### Example 3: Scrape Pull Requests
+
+```json
+{
+  "repo_url": "https://github.com/tiangolo/typer",
+  "mode": "pull_requests",
+  "start_year": 2024,
+  "top_k": 3
+}
 ```
 
-**Use Case:** Use default parameters to get a general list of repositories.
+**Use Case:** Get code changes from recent pull requests.
 
-## Response Format
+#### Example 4: Scrape with Time Window
 
-All `/discover` endpoints return the following JSON structure:
+```json
+{
+  "repo_url": "https://github.com/fastapi/fastapi",
+  "mode": "commits",
+  "start_year": 2023,
+  "end_year": 2023,
+  "top_k": 10
+}
+```
+
+**Use Case:** Get all commits from 2023 only.
+
+## Response Formats
+
+### Discovery Response
 
 ```json
 {
@@ -159,6 +227,45 @@ All `/discover` endpoints return the following JSON structure:
 }
 ```
 
+### Scraping Response
+
+```json
+{
+  "repository": {
+    "name": "fastapi",
+    "full_name": "fastapi/fastapi",
+    "description": "FastAPI framework, high performance, easy to learn, fast to code, ready for production",
+    "language": "Python",
+    "stars": 84985,
+    "forks": 7358,
+    "created_at": "2018-12-08T08:21:47Z",
+    "updated_at": "2025-05-24T14:30:41Z"
+  },
+  "mode": "files",
+  "time_window": {
+    "start_year": 2024,
+    "end_year": 2024
+  },
+  "code_snippets": [
+    {
+      "content": "from fastapi import FastAPI\n\napp = FastAPI()\n\n@app.get(\"/\")\ndef read_root():\n    return {\"Hello\": \"World\"}",
+      "file_path": "main.py",
+      "language": "Python",
+      "size_bytes": 128,
+      "lines_count": 7,
+      "commit_sha": "abc123...",
+      "commit_message": "Initial commit",
+      "commit_date": "2024-01-01T00:00:00Z",
+      "author": "John Doe",
+      "pr_number": 123,
+      "pr_title": "Add main endpoint"
+    }
+  ],
+  "total_found": 50,
+  "returned_count": 3
+}
+```
+
 ## Testing Scenarios
 
 ### 1. Basic Functionality Test
@@ -166,8 +273,9 @@ All `/discover` endpoints return the following JSON structure:
 1. **Health Check** - Verify service is running
 2. **Root Endpoint** - Check basic service info
 3. **Default Discovery** - Test with no parameters
+4. **Basic Scraping** - Test each scraping mode
 
-### 2. Parameter Validation Tests
+### 2. Discovery Parameter Validation Tests
 
 1. **Minimum Stars** - Test different star thresholds
 2. **Minimum Forks** - Test different fork thresholds
@@ -175,24 +283,34 @@ All `/discover` endpoints return the following JSON structure:
 4. **Sorting Options** - Test all sort options (stars, forks, updated)
 5. **Result Limits** - Test different top_k values
 
-### 3. Edge Cases
+### 3. Scraping Parameter Validation Tests
 
-1. **No Results** - Search with very high thresholds
-2. **Maximum Limit** - Test with top_k=100
-3. **Invalid Parameters** - Test with invalid sort values
-4. **Special Characters** - Test languages with special characters (C++)
+1. **All Modes** - Test files, commits, and pull_requests modes
+2. **Time Windows** - Test different start_year and end_year combinations
+3. **Repository Validation** - Test with valid and invalid URLs
+4. **Result Limits** - Test different top_k values for scraping
 
-### 4. Performance Tests
+### 4. Edge Cases
 
-1. **Large Result Sets** - Request maximum repositories
+1. **No Results** - Search/scrape with very high thresholds
+2. **Maximum Limits** - Test with top_k=100
+3. **Invalid Parameters** - Test with invalid values
+4. **Empty Repositories** - Test scraping empty repositories
+5. **Private Repositories** - Test scraping private repos (should fail)
+
+### 5. Performance Tests
+
+1. **Large Result Sets** - Request maximum repositories/snippets
 2. **Multiple Languages** - Test with many language filters
 3. **Response Time** - Monitor API response times
+4. **Concurrent Requests** - Test multiple simultaneous requests
 
 ## Error Handling
 
 The API returns appropriate HTTP status codes:
 
 - **200 OK** - Successful request
+- **404 Not Found** - Repository not found
 - **422 Unprocessable Entity** - Invalid parameters
 - **429 Too Many Requests** - GitHub API rate limit exceeded
 - **503 Service Unavailable** - GitHub API connection issues
@@ -206,23 +324,30 @@ The API returns appropriate HTTP status codes:
 
 3. **URL Encoding**: Special characters in language names (like C++) are automatically URL encoded in Postman.
 
-4. **Multiple Values**: To test multiple languages, add multiple `languages` parameters in Postman's query params section.
+4. **Repository URLs**: Use full GitHub URLs (e.g., `https://github.com/owner/repo`).
 
-5. **Response Validation**: Check that the returned repositories match your search criteria.
+5. **Time Windows**: Use realistic year ranges (2008-2025) for filtering.
+
+6. **Content Size**: Scraped content can be large; consider using smaller top_k values for testing.
 
 ## Collection Structure
 
 The imported Postman collection includes:
+
+### Discovery Endpoints
 
 1. **Health Check** - Service health verification
 2. **Root Endpoint** - Basic service info
 3. **Discover Popular Python Repositories** - Python-specific search
 4. **Discover JavaScript/TypeScript Repositories** - Multi-language search
 5. **Discover Recently Updated Go Repositories** - Sort by update time
-6. **Discover High Fork Count Repositories** - Fork-based filtering
-7. **Discover Rust Repositories** - Rust-specific search
-8. **Discover Multiple Languages** - Multi-language filtering
-9. **Discover Any Popular Repositories** - High star count, any language
-10. **Minimal Query** - Default parameters test
+
+### Scraping Endpoints
+
+6. **Scrape Files Mode** - Get source code files
+7. **Scrape Commits Mode** - Get commit changes
+8. **Scrape Pull Requests Mode** - Get PR changes
+9. **Scrape with Time Window** - Time-filtered scraping
+10. **Scrape Error Case** - Test invalid repository
 
 Each request includes detailed descriptions and properly configured parameters for easy testing.
