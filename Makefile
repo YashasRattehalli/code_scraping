@@ -21,7 +21,7 @@ install: setup
 
 run: install
 	@echo "Starting FastAPI production server..."
-	@$(VENV_DIR)/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+	@$(VENV_DIR)/bin/uvicorn app.main:app --host 0.0.0.0 --port 8001
 
 clean:
 	@echo "Cleaning up..."

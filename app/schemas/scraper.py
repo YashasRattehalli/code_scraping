@@ -14,9 +14,9 @@ class ScrapingRequest(BaseModel):
     """Request model for GitHub repo scraping"""
     repo_url: HttpUrl = Field(..., description="GitHub repository URL")
     mode: ScrapingMode = Field(..., description="Type of scraping: files, commits, or pull_requests")
-    start_year: Optional[int] = Field(None, ge=2008, le=2025, description="Start year for time window filter")
-    end_year: Optional[int] = Field(None, ge=2008, le=2025, description="End year for time window filter")
-    top_k: int = Field(default=10, ge=1, le=100, description="Maximum number of code samples to return")
+    start_year: Optional[int] = Field(None, description="Start year for time window filter")
+    end_year: Optional[int] = Field(None, description="End year for time window filter")
+    top_k: int = Field(default=10, description="Maximum number of code samples to return")
 
 
 class CodeSnippet(BaseModel):
