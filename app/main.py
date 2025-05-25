@@ -48,12 +48,12 @@ app = FastAPI(
     },
     servers=[
         {
-            "url": "http://localhost:8001",
-            "description": "Development server"
+            "url": "http://54.89.84.159",
+            "description": "Production server"
         },
         {
-            "url": "https://your-production-url.com",
-            "description": "Production server"
+            "url": "http://localhost:8001",
+            "description": "Development server"
         }
     ],
     # Enhanced OpenAPI configuration
