@@ -48,7 +48,7 @@ app = FastAPI(
     },
     servers=[
         {
-            "url": "http://54.89.84.159",
+            "url": "http://54.89.84.159:8001",
             "description": "Production server"
         },
         {
